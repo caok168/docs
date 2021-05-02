@@ -14,6 +14,17 @@ pstree -g
 
 Kubernetes项目之所以要这么做的原因，就是部署的应用，往往都存在着类似于“进程和进程组”的关系。更具体地说，就是这些应用之间有着密切的协作关系，使得它们必须部署在同一台机器上。
 
+### Pod在Kubernetes项目里还有更重要的意义，那就是：容器设计模式。
+**Pod的实现原理**
+* 首先，关于Pod最重要的一个事实是：它只是一个逻辑概念。
+    * Pod其实是一组共享了某些资源的容器。
+    * Pod里的所有容器，共享的是同一个Network Namespace，并且可以声明共享同一个Volume。
+    * 在Kubernetes项目里，Pod的实现需要使用一个中间容器，这个容器叫作Infra容器。
+    * 在这个Pod中，Infra容器永远都是第一个被创建的容器，而其他用户定义的容器，则通过Join Network Namespace的方式，与Infra容器关联在一起。
+    * 在Kubernetes项目里，Infra容器一定要占用极少的资源，所以它使用的是一个非常特殊的镜像，叫作：k8s.gcr.io/pause。
+* Kubernetes项目只要把所有Volume的定义都设计在Pod层级即可。
+
+* 在Pod中，所有Init Container定义的容器，都会比spec.containers定义的用户容器先启动。并且，Init Container容器会按顺序逐一启动，而直到它们都启动并且退出了，用户容器才会启动。
 
 
 
