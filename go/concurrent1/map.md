@@ -3,8 +3,18 @@
 ### Go内建的map类型
 * map的类型是map[key]
 * key类型的K必须是可比较的
+    - key类型的K必须是可比较的（comparable），也就是可以通过 == 和 !=操作符进行比较；
+    - 在Go语言中，bool、整数、浮点数、复数、字符串、channel、接口都是可比较的，包含可比较元素的struct和数组；而slice、map、函数值是不可比较的
 * map[key]函数返回结果可以是一个值，也可以是两个值
 * map是无序的，想要保证遍历map时元素有序，可以使用orderedmap
+    ```
+    m := orderdmap.NewOrderedMap()
+    m.Set("foo", "bar")
+    m.Set("qux", 1.23)
+    m.Set(123, true)
+
+    m.Delete("qux")
+    ```
 
 ### 使用map的2种常见错误
 * 未初始化
