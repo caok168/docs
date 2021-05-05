@@ -88,3 +88,45 @@ golang 的垃圾回收(GC)是基于标记清扫算法，这种算法需要进行
 
 参考连接：
 https://www.cnblogs.com/hezhixiong/p/9577199.html
+
+## 3.Golang GC性能优化技巧
+* (1)slice预先分配内存
+* (2)新建的map也可以指定大小
+    - 减少内存拷贝的开销，也可以减少rehash开销
+    - map中保存值，而不是指针，使用分段map
+    - 使用分段的，保存值的map的GC耗时最小。加上GODEBUG=gctrace=1分析GC轨迹
+    - map保存值比保存指针的耗时少，主要是在GC的标记阶段耗时更少
+* (3)string与[]byte的转换
+    - string从设计上是不可变的。因此，string和[]byte的类型转化，都是产生一份新的副本
+    - 如果确定转换的string/[]byte不会被修改，可以进行直接的转换，这样不会生成原有变量的副本。新的变量共享底层的数据指针
+    -
+    ```
+    func String2Bytes(s string) []byte {
+        stringHeader := (*reflect.StringHeader)(unsafe.Pointer(&s))
+        bh := reflect.SliceHeader {
+            Data: stringHeader.Data,
+            Len: stringHeader.Len,
+            Cap: stringHeader.Len,
+        }
+        return *(*[]byte)(unsafe.Pointer(&bh))
+    }
+    func Bytes2String(b []byte) string {
+        sliceHeader
+        sh := reflect.StringHeader {
+            Data: sliceHeader.Data,
+            Len: sliceHeader.Len,
+        }
+        return *(*string)(unsafe.Pointer(&sh))
+    }
+    ```
+* (4)函数返回值使用值，不使用指针
+* (5)使用struct{}优化
+    - Golang中，没有集合set。如果要实现一个集合，可以使用struct{}作为值
+    - struct{} 经过编译器特殊优化，指向同一个内存地址(runtime.zerobase)，不占用空间。
+
+#### GC分析的工具
+* go tool pprof
+* go tool trace
+* go build -gcflags="-m"
+* GODEBUG="gctrace=1"
+
