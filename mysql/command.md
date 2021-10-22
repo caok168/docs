@@ -97,5 +97,10 @@ https://www.cnblogs.com/zgq123456/p/9956820.html
 * Lock tables xxx WRITE 这是加表级独占锁
 一般没有人用这种方法对表进行加锁
 
+## 清理binlog
+### 将bin.000055之前的binlog清除
+* purge binary logs 'bin.000055';
 
-
+#### 问题
+* The option expire_logs_days and binlog_expire_logs_seconds cannot be used together. Please use binlog_expire_logs_seconds to set the expire time (expire_logs_days is deprecated)
+* set global binlog_expire_logs_seconds=604800; # 7天
