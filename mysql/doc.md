@@ -81,3 +81,56 @@ idx_acb (a,c,b)，这种方式才是真正最优的
 https://blog.csdn.net/wen_fei/article/details/89085813?utm_medium=distribute.pc_relevant_bbs_down.none-task-blog-baidujs-1.nonecase&depth_1-utm_source=distribute.pc_relevant_bbs_down.none-task-blog-baidujs-1.nonecase
 
 
+## 3.分表
+
+### 创建测试数据库
+```
+create database test charset=utf8;
+```
+
+### 创建测试表
+```
+use test;		// 先切换到test数据库
+create table test_log
+(
+	time datetime,
+	msg varchar(2000)
+)
+```
+
+### 手动进行分区
+#### 批量进行分区
+```
+alter table test_log partition by range columns(time)(
+	partition p20191001 values less than('2019-10-01'),
+	partition p20191002 values less than('2019-10-02'),
+	partition p20191003 values less than('2019-10-03'),
+	partition p20191003 values less than('2019-10-04')
+);
+```
+
+#### 单条增加分区
+```
+alter table test_log add partition (partition p20191003 values less than('2019-10-03'));
+```
+
+#### 删除分区命令
+```
+alter table test_log drop partition p20191004;
+```
+
+### 插入数据
+```
+insert into test_log values('2019-10-01 10:11:13', 'hi');
+insert into test_log values('2019-10-02 10:12:10', 'ni');
+insert into test_log values('2019-10-03 10:12:10', 'hao');
+```
+
+### 查看分区表
+```
+select partition_name, partition_description as val from information_schema.partitions
+where table_name='test_log' and table_schema='test';
+```
+
+参考链接：
+https://www.cnblogs.com/wangsongbai/p/13444620.html

@@ -25,3 +25,34 @@
 * 参数：innodb_io_capacity：这个参数是告诉数据库采用多大的IO速率把缓存页flush到磁盘里去。
 * 参数：innodb_flush_neighbors：在flush缓存页到磁盘的时候，会控制把缓存页临近的其他缓存页也刷到磁盘，但是这样有时候会导致flush的缓存页太多了；参数设置为0，禁止刷临近缓存页，这样就把每次刷新的缓存页数量降低到最少了。
 
+### 快速复制一张表
+#### 方式一
+* select into from table2 from table1
+* insert into table2(a, b, c) select a, b, c from table1
+
+#### 方式二
+* 使用mysqldump命令将数据导出成一组INSERT语句
+```
+mysqldump -h$host -P$port -u$user --add-locks=0 --no-create-info --single-transaction  --set-gtid-purged=OFF db1 t --where="a>900" --result-file=/client_tmp/t.sql
+```
+
+* --single-transaction：作用是，在导出数据的时候不需要对表db1.t加表锁，而是使用START TRANSACTION WITH CONSISTENT SNAPSHOT的方法；
+* --add-locks设置为0，表示在输出的文件结果里，不增加"LOCK TABLES t WRITE;"
+* --no-create-info：不需要导出表结构
+* --set-gtid-purged=off：表示的是，不输出跟GTID相关的信息
+* --result-file：指定了输出文件的路径，其中client表示生成的文件是在客户端机器上的。
+
+```
+mysql -h127.0.0.1 -P13000  -uroot db2 -e "source /client_tmp/t.sql"
+```
+
+#### 方式三
+* 物理拷贝方法
+```
+1、create table r like t // 创建一个相同表结构的空表
+2、alter table r discard tablespace // r.ibd文件会被删除
+3、flush table t for export // 这时候db1 目录下会生成一个t.cfg文件
+4、cp t.cfg r.cfg; cp t.ibd r.ibd // 注意读写权限
+5、unlock tables // t.cfg文件会被删除
+6、alter table r import tablespace // 将这个r.ibd文件作为表r新的表空间
+```
