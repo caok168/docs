@@ -134,3 +134,5 @@ where table_name='test_log' and table_schema='test';
 
 参考链接：
 https://www.cnblogs.com/wangsongbai/p/13444620.html
+https://www.cnblogs.com/garfieldcgf/p/10143367.html
+

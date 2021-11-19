@@ -104,3 +104,14 @@ https://www.cnblogs.com/zgq123456/p/9956820.html
 #### 问题
 * The option expire_logs_days and binlog_expire_logs_seconds cannot be used together. Please use binlog_expire_logs_seconds to set the expire time (expire_logs_days is deprecated)
 * set global binlog_expire_logs_seconds=604800; # 7天
+
+## 隔离级别
+* 查询隔离级别
+* show variables like '%iso%'
+* set session transaction_isolation='read-committed';
+```
+READ-UNCOMMITTED
+READ-COMMITTED
+REPEATABLE-READ
+SERIALIZABLE
+```
